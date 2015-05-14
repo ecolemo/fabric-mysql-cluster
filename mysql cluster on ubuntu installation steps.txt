@@ -1,0 +1,70 @@
+######
+Common
+######
+
+cd /var/tmp
+wget http://dev.mysql.com/get/Downloads/MySQL-Cluster-7.4/mysql-cluster-gpl-7.4.6-linux-glibc2.5-x86_64.tar.gz
+
+########
+mgm node
+########
+
+tar -zxvf mysql-cluster-gpl-7.4.6-linux-glibc2.5-x86_64.tar.gz
+cd mysql-cluster-gpl-7.4.6-linux-glibc2.5-x86_64
+cp bin/ndb_mgm* /usr/local/bin
+cd /usr/local/bin
+chmod +x ndb_mgm*
+mkdir /var/lib/mysql-cluster
+cd /var/lib/mysql-cluster
+vi config.ini
+
+
+#########
+data node
+#########
+
+tar -zxvf mysql-cluster-gpl-7.4.6-linux-glibc2.5-x86_64.tar.gz
+cd mysql-cluster-gpl-7.4.6-linux-glibc2.5-x86_64
+cp bin/ndbd /usr/local/bin
+cp bin/ndbmtd /usr/local/bin
+cd /usr/local/bin
+chmod +x ndb*
+mkdir /usr/local/mysql
+mkdir /usr/local/mysql/data
+cd /etc
+vi my.cnf
+
+########
+sql node
+########
+
+groupadd mysql
+useradd -g mysql mysql
+tar -C /usr/local -zxvf mysql-cluster-gpl-7.4.6-linux-glibc2.5-x86_64.tar.gz
+ln -s /usr/local/mysql-cluster-gpl-7.4.6-linux-glibc2.5-x86_64 /usr/local/mysql
+cd /usr/local/mysql
+scripts/mysql_install_db --user=mysql
+	* if it fails with "Installing MySQL system tables..../bin/mysqld: error while loading shared libraries: libaio.so.1: cannot open shared object file: No such file or directory"
+	apt-get update [optional]
+	apt-get install libaio1
+chown -R root .
+chown -R mysql data
+chgrp -R mysql .
+cp support-files/mysql.server /etc/init.d
+chmod +x /etc/init.d/mysql.server
+update-rc.d mysql.server defaults
+cd /etc
+vi my.cnf
+
+###################
+start mysql cluster
+###################
+
+management node
+/usr/local/bin/ndb_mgmd -f /var/lib/mysql-cluster/config.ini --configdir=/var/lib/mysql-cluster --initial
+
+data node
+/usr/local/bin/ndbd
+
+sql node
+/etc/init.d/mysql.server start
