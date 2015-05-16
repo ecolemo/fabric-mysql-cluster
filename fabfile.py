@@ -7,7 +7,6 @@ from fabric.state import env
 from fabric.tasks import execute
 
 env.user = 'root'
-env.password = 'woeoro1989'
 env.roledefs = {
     'mgm_nodes': ['10.211.55.33'],
     'data_nodes': ['10.211.55.34'],
