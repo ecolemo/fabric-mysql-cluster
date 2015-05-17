@@ -28,7 +28,7 @@ def create_conf_files():
     configurations = []
     node_hosts = {}
     for node_type in ['mgm_nodes', 'data_nodes', 'sql_nodes']:
-        node_hosts[node_type] = env.roledefs[node_type]['node_hosts'] if env.roledefs[node_type]['node_hosts'] else env.roledefs[node_type]['hosts']
+        node_hosts[node_type] = env.roledefs[node_type]['node_hosts'] if env.roledefs[node_type].get('node_hosts') else env.roledefs[node_type]['hosts']
 
     # configuation for config.ini
     configuration_1 = {}
@@ -71,6 +71,7 @@ def create_conf_files():
 
 @roles("mgm_nodes")
 def setup_mgm_nodes():
+    create_conf_files()
     put('scripts/mgmnode.sh', '/var/tmp')
     run('chmod +x /var/tmp/mgmnode.sh')
     run('/var/tmp/mgmnode.sh')
@@ -78,6 +79,7 @@ def setup_mgm_nodes():
 
 @roles("data_nodes")
 def setup_data_nodes():
+    create_conf_files()
     put('confs/my.cnf', '/etc')
     put('scripts/datanode.sh', '/var/tmp')
     run('chmod +x /var/tmp/datanode.sh')
@@ -86,6 +88,7 @@ def setup_data_nodes():
 
 @roles("sql_nodes")
 def setup_sql_nodes():
+    create_conf_files()
     put('confs/my.cnf', '/etc')
     put('scripts/sqlnode.sh', '/var/tmp')
     run('chmod +x /var/tmp/sqlnode.sh')
@@ -93,7 +96,7 @@ def setup_sql_nodes():
 
 @roles("mgm_nodes")
 def start_mgm_nodes():
-    run('/usr/local/bin/ndb_mgmd -f /var/lib/mysql-cluster/config.ini --configdir=/var/lib/mysql-cluster --initial')
+    run('/usr/local/bin/ndb_mgmd -f /var/lib/mysql-cluster/config.ini --configdir=/var/lib/mysql-cluster')
 
 @roles("data_nodes")
 def start_data_nodes():
@@ -101,10 +104,10 @@ def start_data_nodes():
 
 @roles("sql_nodes")
 def start_sql_nodes():
+    run('pkill -9 mysql')
     run('service mysql.server start')
 
 def setup_mysql_cluster():
-    create_conf_files()
     execute(setup_mgm_nodes)
     execute(setup_data_nodes)
     execute(setup_sql_nodes)
