@@ -76,10 +76,10 @@ start sql nodes
 
 ###test mysql cluster
 
-connect to mysql server of the sql node
+##### local connection to mysql cluter (sql node)
 
 ```
-mysql -h sql_node_host -u root
+mysql -u root
 
 mysql> create database clustertest;
 Query OK, 1 row affected (0.11 sec)
@@ -115,3 +115,13 @@ mysql> select * from testtable;
 +------------+
 1 row in set (0.00 sec)
 ```
+
+##### for non-local connections
+
+grand access to all hosts
+
+`mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;`
+
+connect mysql outside sql node
+
+`mysql -h sql_node_host -u root`
