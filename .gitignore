@@ -49,3 +49,5 @@ crashlytics-build.properties
 
 
 tests/
+confs/config.ini
+confs/my.cnf
