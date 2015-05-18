@@ -124,6 +124,7 @@ def setup_sql_nodes():
 
 @roles("mgm_nodes")
 def start_mgm_nodes():
+    run('ndb_mgm -e shutdown')
     kill_and_run('ndb_mgmd', '/usr/local/bin/ndb_mgmd -f /var/lib/mysql-cluster/config.ini --configdir=/var/lib/mysql-cluster --initial')
 
 @roles("data_nodes")
