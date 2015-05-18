@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from time import sleep
 from fabric.context_managers import lcd
 from fabric.contrib.files import upload_template
-from fabric.decorators import roles
+from fabric.decorators import roles, parallel
 from fabric.operations import put, run
 from fabric.state import env
 from fabric.tasks import execute
@@ -9,18 +10,30 @@ from fabric.tasks import execute
 
 env.roledefs = {
     'mgm_nodes': {
-        'hosts': ['210.122.7.220'],
-        'node_hosts': ['10.128.69.31']
+        'hosts': ['10.211.55.36']
     },
     'data_nodes': {
-        'hosts': ['210.122.7.219', '210.122.7.156'],
-        'node_hosts': ['10.128.69.27', '10.128.69.19']
+        'hosts': ['10.211.55.37', '10.211.55.38']
     },
     'sql_nodes': {
-        'hosts': ['210.122.7.221'],
-        'node_hosts': ['10.128.69.35']
+        'hosts': ['10.211.55.39']
     }
 }
+
+# env.roledefs = {
+#     'mgm_nodes': {
+#         'hosts': ['210.122.7.220'],
+#         'node_hosts': ['10.128.69.31']
+#     },
+#     'data_nodes': {
+#         'hosts': ['210.122.7.219', '210.122.7.156'],
+#         'node_hosts': ['10.128.69.27', '10.128.69.19']
+#     },
+#     'sql_nodes': {
+#         'hosts': ['210.122.7.221'],
+#         'node_hosts': ['10.128.69.35']
+#     }
+# }
 
 # env.passwords = {
 #     'root@210.122.7.220:22': '',
@@ -77,6 +90,14 @@ def create_conf_files():
         infile.close()
         outfile.close()
 
+def kill_and_run(process, command, num_of_attempts=3):
+    run('pkill %s' % process)
+    for i in range(num_of_attempts):
+        sleep(5)
+        if not run('pgrep -l %s' % process):
+            run(command)
+            break
+
 @roles("mgm_nodes")
 def setup_mgm_nodes():
     create_conf_files()
@@ -93,7 +114,6 @@ def setup_data_nodes():
     run('chmod +x /var/tmp/datanode.sh')
     run('/var/tmp/datanode.sh')
 
-
 @roles("sql_nodes")
 def setup_sql_nodes():
     create_conf_files()
@@ -104,8 +124,7 @@ def setup_sql_nodes():
 
 @roles("mgm_nodes")
 def start_mgm_nodes():
-    run('killall ndb_mgmd')
-    run('/usr/local/bin/ndb_mgmd -f /var/lib/mysql-cluster/config.ini --configdir=/var/lib/mysql-cluster --initial')
+    kill_and_run('ndb_mgmd', '/usr/local/bin/ndb_mgmd -f /var/lib/mysql-cluster/config.ini --configdir=/var/lib/mysql-cluster --initial')
 
 @roles("data_nodes")
 def start_data_nodes():
@@ -113,8 +132,7 @@ def start_data_nodes():
 
 @roles("sql_nodes")
 def start_sql_nodes():
-    run('pkill -9 mysql')
-    run('service mysql.server start')
+    kill_and_run('mysql', 'service mysql.server start')
 
 def setup_mysql_cluster():
     execute(setup_mgm_nodes)
