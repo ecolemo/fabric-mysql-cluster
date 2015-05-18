@@ -20,6 +20,7 @@ sudo apt-get -y install libaio1 libaio-dev
 groupadd mysql
 useradd -g mysql mysql
 
+pkill -9 mysql
 
 cd /var/tmp/
 

@@ -34,6 +34,17 @@ env.roledefs = {
 }
 ```
 
+### [optional] set passwords
+
+```
+env.passwords = {
+    'root@116.34.66.1:22': '<password>',
+    'root@116.34.66.2:22': '<password>',
+    'root@116.34.66.3:22': '<password>',
+    'root@116.34.66.4:22': '<password>',
+}
+```
+
 ### setup mysql cluster
 
 `fab setup_mysql_cluster`

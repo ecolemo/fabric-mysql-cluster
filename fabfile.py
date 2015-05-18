@@ -9,20 +9,28 @@ from fabric.tasks import execute
 
 env.roledefs = {
     'mgm_nodes': {
-        'hosts': ['10.211.55.36'],
-        'node_hosts': ['192.168.0.1']
+        'hosts': ['210.122.7.220'],
+        'node_hosts': ['10.128.69.31']
     },
     'data_nodes': {
-        'hosts': ['10.211.55.37', '10.211.55.38'],
-        'node_hosts': ['192.168.0.2', '192.168.0.3']
+        'hosts': ['210.122.7.219', '210.122.7.156'],
+        'node_hosts': ['10.128.69.27', '10.128.69.19']
     },
     'sql_nodes': {
-        'hosts': ['10.211.55.39'],
-        'node_hosts': ['192.168.0.4']
+        'hosts': ['210.122.7.221'],
+        'node_hosts': ['10.128.69.35']
     }
 }
 
+# env.passwords = {
+#     'root@210.122.7.220:22': '',
+#     'root@210.122.7.219:22': '',
+#     'root@210.122.7.156:22': '',
+#     'root@210.122.7.221:22': '',
+# }
+
 env.user = 'root'
+env.warn_only = True
 
 def create_conf_files():
     configurations = []
@@ -96,11 +104,12 @@ def setup_sql_nodes():
 
 @roles("mgm_nodes")
 def start_mgm_nodes():
-    run('/usr/local/bin/ndb_mgmd -f /var/lib/mysql-cluster/config.ini --configdir=/var/lib/mysql-cluster')
+    run('killall ndb_mgmd')
+    run('/usr/local/bin/ndb_mgmd -f /var/lib/mysql-cluster/config.ini --configdir=/var/lib/mysql-cluster --initial')
 
 @roles("data_nodes")
 def start_data_nodes():
-    run('ndbd')
+    run('ndbd --initial')
 
 @roles("sql_nodes")
 def start_sql_nodes():
